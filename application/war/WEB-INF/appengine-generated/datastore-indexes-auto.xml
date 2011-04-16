@@ -1,0 +1,11 @@
+<!-- Indices written at Sat, 16 Apr 2011 09:07:56 UTC -->
+
+<datastore-indexes>
+
+    <!-- Used 1 time in query history -->
+    <datastore-index kind="Resource" ancestor="false" source="auto">
+        <property name="mPath" direction="asc"/>
+        <property name="mModified" direction="desc"/>
+    </datastore-index>
+
+</datastore-indexes>
