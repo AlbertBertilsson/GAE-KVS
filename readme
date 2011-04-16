@@ -1,0 +1,7 @@
+GAE-KVS
+
+Google App Engine Key-Value Store
+
+A really simple key value store for Google app engine projects.
+
+Basic idea: Have a super simple drop in solution for key-value storage on GAE.
