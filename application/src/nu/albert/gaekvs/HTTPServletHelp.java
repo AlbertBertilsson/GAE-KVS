@@ -1,6 +1,7 @@
 package nu.albert.gaekvs;
 
 import java.io.BufferedReader;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -30,7 +31,7 @@ public class HTTPServletHelp {
 	public static void error(HttpServletResponse resp, int code, String msg) throws IOException {
 		resp.sendError(code, msg);
 	}
-
+	
 	public static String getInput(HttpServletRequest req) throws IOException {
 		BufferedReader br = req.getReader();
 		StringBuffer sb = new StringBuffer();
@@ -41,6 +42,21 @@ public class HTTPServletHelp {
         }
 		
 		return sb.toString();
+	}
+	
+	public static byte[] getByteInput(HttpServletRequest req) throws IOException {
+		ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+
+		int nRead;
+		byte[] data = new byte[16384];
+
+		while ((nRead = req.getInputStream().read(data, 0, data.length)) != -1) {
+		  buffer.write(data, 0, nRead);
+		}
+
+		buffer.flush();
+
+		return buffer.toByteArray();
 	}
 
 	public static String getBasicAuth(HttpServletRequest req) {

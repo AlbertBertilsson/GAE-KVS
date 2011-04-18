@@ -55,12 +55,7 @@ public class GAEKVSServlet extends HttpServlet {
 		}
 		
 		entity = entity.substring(servletUrl.length());
-		
-		if (entity.length() == 0) {
-			HTTPServletHelp.error(resp, 400, "Bad request, no entity specified.");
-			return null;
-		}
-		
+
 		return entity;
 	}
 
@@ -72,7 +67,7 @@ public class GAEKVSServlet extends HttpServlet {
 			if (entity == null) return;
 			
 			Resource res = null;
-			if (entity.endsWith("/")) {
+			if ((entity.length() == 0 || entity.endsWith("/")) && Configuration.get("WebServerMode").equals("false")) {
 				Resource[] ra = Resource.getPath(entity);
 				
 				if (ra != null && ra.length > 0) {
@@ -80,17 +75,25 @@ public class GAEKVSServlet extends HttpServlet {
 					setContentHeaders(resp, res);
 
 					for (Resource e : ra) {
-						if (e.getValue() != null) {
-							resp.getWriter().print(e.getValue() + "\r\n");
+						if (e.getResource() != null) {
+							resp.getOutputStream().write(e.getResource(), 0, e.getLength());
 						}
 					}
 				}
 			} else {
 				res = Resource.get(entity);
+				
+				if (res == null) {
+					if ((entity.length() == 0 || entity.endsWith("/")) && Configuration.get("WebServerMode").equals("true")) {
+						res = Resource.get(entity + "index.html");
+						if (res == null)
+							res = Resource.get(entity + "index.htm");
+					}
+				}
 
-				if (res != null && res.getValue() != null) {
+				if (res != null && res.getResource() != null) {
 					setContentHeaders(resp, res);
-					resp.getWriter().print(res.getValue());
+					resp.getOutputStream().write(res.getResource(), 0, res.getLength());
 				}
 			}
 
@@ -154,8 +157,8 @@ public class GAEKVSServlet extends HttpServlet {
 				HTTPServletHelp.error(resp, 400, "Bad request, no entity specified.");
 				return;
 			}
-			
-			Resource r = new Resource(entity, req.getContentType(), req.getCharacterEncoding(), HTTPServletHelp.getInput(req));
+
+			Resource r = new Resource(entity, req.getContentType(), req.getCharacterEncoding(), HTTPServletHelp.getByteInput(req));
 			int code = r.put();
 			resp.setStatus(code);
 		} catch (Exception ex) {

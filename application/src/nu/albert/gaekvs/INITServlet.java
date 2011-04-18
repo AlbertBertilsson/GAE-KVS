@@ -16,20 +16,23 @@ public class INITServlet extends HttpServlet {
 				Configuration.set("Write", "admin");
 
 			if (Configuration.get("HttpsRequired") == null)
-				Configuration.set("HttpsRequired", "true");
+				Configuration.set("HttpsRequired", "false");
+
+			if (Configuration.get("WebServerMode") == null)
+				Configuration.set("WebServerMode", "false");
 
 			if (Configuration.get("AdminPassword") == null)
 				Configuration.set("AdminPassword", MD5.Hash(String.format("%s%s", System.currentTimeMillis(), Math.random())));
 			
 			if (Resource.get("test/test") == null)
-				new Resource("test/test", "text/plain", "UTF-8", "Hello!").put();
+				new Resource("test/test", "text/plain", "UTF-8", "Hello!".getBytes()).put();
 			
 			if (Resource.get("test/test2") == null)
-				new Resource("test/test2", "text/plain", "UTF-8", "Welcome to GAE-KVS!").put();
+				new Resource("test/test2", "text/plain", "UTF-8", "Welcome to GAE-KVS!".getBytes()).put();
 			
 			resp.setContentType("text/plain");
 			resp.setCharacterEncoding("UTF-8");
-			resp.getWriter().println("Please alter your configuration options in the admin GUI at:\nhttps://appengine.google.com/\n\nChoose menu: Datastore Viewer and edit the Configuration entities.\n\nRead: any|admin|none\nWrite: any|admin|none\nAdminPassword: <password>\nHttpsRequired: true|false");
+			resp.getWriter().println("Please alter your configuration options in the admin GUI at:\nhttps://appengine.google.com/\n\nChoose menu: Datastore Viewer and edit the Configuration entities.\n\nRead: any|admin|none\nWrite: any|admin|none\nAdminPassword: <password>\nHttpsRequired: true|false\nWebServerMode: true|false");
 			
 		} catch (Exception ex) {
 			HTTPServletHelp.error(resp, ex);

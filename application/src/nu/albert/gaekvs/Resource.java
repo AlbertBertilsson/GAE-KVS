@@ -1,5 +1,6 @@
 package nu.albert.gaekvs;
 
+import java.util.ArrayList;
 import java.util.List;
 import javax.jdo.PersistenceManager;
 import javax.jdo.Query;
@@ -8,6 +9,7 @@ import javax.jdo.annotations.PersistenceCapable;
 import javax.jdo.annotations.Persistent;
 import javax.jdo.annotations.PrimaryKey;
 
+import nu.albert.gaekvs.Blob;
 import com.google.appengine.api.datastore.Key;
 
 @PersistenceCapable(detachable="true")
@@ -33,8 +35,8 @@ public class Resource {
     @Persistent
     private String mPath;
 
-    @Persistent
-    private String mValue;
+    @Persistent(serialized = "true")
+    private Blob mResource;
     
     public String getKey() {
     	return mKey;
@@ -52,17 +54,22 @@ public class Resource {
     	return mEncoding;
     }
     
-    public String getValue() {
-    	return mValue;
+    
+    public int getLength() {
+    	return mResource.content.length;
+    }
+    
+    public byte[] getResource() {
+    	return mResource.content;
     }
 
-    public Resource(String key, String type, String encoding, String value) {
+    public Resource(String key, String type, String encoding, byte[] value) {
     	mModified = System.currentTimeMillis();
     	mType = type;
     	mEncoding = encoding;
     	mPath = path(key);
     	mKey = key(key);
-    	mValue = value;
+    	mResource = new Blob(value);
     }
     
     private static String path(String key) {
@@ -92,8 +99,12 @@ public class Resource {
 			
 			@SuppressWarnings("unchecked")
 			List<Resource> res = (List<Resource>)q.execute();
-			for (Resource r : res)
-				return r;
+			for (Resource r : res) {
+				Resource ret = pm.detachCopy(r);
+				ret.mResource = new Blob(r.getResource());
+				
+				return ret;
+			}
 			
 			return null;
 		} catch (javax.jdo.JDOObjectNotFoundException nf) {
@@ -116,7 +127,12 @@ public class Resource {
 			
 			@SuppressWarnings("unchecked")
 			List<Resource> res = (List<Resource>)q.execute();
-			List<Resource> rc = (List<Resource>)pm.detachCopyAll(res);
+			List<Resource> rc = new ArrayList<Resource>();
+			for (Resource r : res) {
+				Resource ret = pm.detachCopy(r);
+				ret.mResource = new Blob(r.getResource());
+				rc.add(ret);
+			}
 			
 			return rc.toArray(new Resource[rc.size()]);
 		} catch (javax.jdo.JDOObjectNotFoundException nf) {
@@ -184,7 +200,7 @@ public class Resource {
 		    	s.mEncoding = mEncoding;
 		    	s.mKey = mKey;
 		    	s.mPath = mPath;
-		    	s.mValue = mValue;
+		    	s.mResource = mResource;
 		    	pm.makePersistent(s);
 				return 200;
 			}

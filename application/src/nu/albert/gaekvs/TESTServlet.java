@@ -26,13 +26,13 @@ public class TESTServlet extends HttpServlet {
 			resp.getWriter().println("<table border=\"1\"><tr><th>Test</th><th>Expected</th><th>Result</th></tr>");
 
 			if (Configuration.get("Read").equals("any")) {
-				testGetCode(resp, "gaekvs/", 400);
+				testGetCode(resp, "gaekvs/", 404);
 				testGet(resp, "gaekvs/test/test", 200, "Hello!");
 				testGet(resp, "gaekvs/test/test2", 200, "Welcome to GAE-KVS!");
 				testGetCode(resp, "gaekvs/test/testing", 404);
-				testGetCode(resp, "gaekvs/?", 400);
+				testGetCode(resp, "gaekvs/?", 404);
 				testGetCode(resp, "gaekvs/test?test", 400);
-				testGet(resp, "gaekvs/test/", 200, "Welcome to GAE-KVS!\r\nHello!\r\n");
+				testGet(resp, "gaekvs/test/", 200, "Welcome to GAE-KVS!Hello!");
 			} else if (Configuration.get("Read").equals("admin")) {
 				testGetCode(resp, "gaekvs/", 401);
 				testGetCode(resp, "gaekvs/test/test", 401);
@@ -43,7 +43,7 @@ public class TESTServlet extends HttpServlet {
 				testGet(resp, "gaekvs/test/test", "admin", Configuration.get("AdminPassword"), 200, "Hello!");
 				testGet(resp, "gaekvs/test/test2", "admin", Configuration.get("AdminPassword"), 200, "Welcome to GAE-KVS!");
 				testGet(resp, "gaekvs/test/testing", "admin", Configuration.get("AdminPassword"), 404, null);
-				testGet(resp, "gaekvs/test/", "admin", Configuration.get("AdminPassword"), 200, "Welcome to GAE-KVS!\r\nHello!\r\n");
+				testGet(resp, "gaekvs/test/", "admin", Configuration.get("AdminPassword"), 200, "Welcome to GAE-KVS!Hello!");
 				testGet(resp, "gaekvs/test/test", "admin", "badpassword", 401, null);
 				testGet(resp, "gaekvs/test/test2", "admin", "badpassword", 401, null);
 				testGet(resp, "gaekvs/test/testing", "admin", "badpassword", 401, null);
