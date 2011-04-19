@@ -67,7 +67,18 @@ public class GAEKVSServlet extends HttpServlet {
 			if (entity == null) return;
 			
 			Resource res = null;
-			if ((entity.length() == 0 || entity.endsWith("/")) && Configuration.get("WebServerMode").equals("false")) {
+			if ((entity.length() == 0 || entity.endsWith("/"))) {
+				if (Configuration.get("WebServerMode").equals("true")) {
+					res = Resource.get(entity + "index.html");
+					if (res == null) res = Resource.get(entity + "index.htm");
+
+					if (res != null && res.getResource() != null) {
+						setContentHeaders(resp, res);
+						resp.getOutputStream().write(res.getResource(), 0, res.getLength());
+						return;
+					}
+				}
+
 				Resource[] ra = Resource.getPath(entity);
 				
 				if (ra != null && ra.length > 0) {
@@ -79,28 +90,20 @@ public class GAEKVSServlet extends HttpServlet {
 							resp.getOutputStream().write(e.getResource(), 0, e.getLength());
 						}
 					}
+					
+					return;
 				}
 			} else {
 				res = Resource.get(entity);
 				
-				if (res == null) {
-					if ((entity.length() == 0 || entity.endsWith("/")) && Configuration.get("WebServerMode").equals("true")) {
-						res = Resource.get(entity + "index.html");
-						if (res == null)
-							res = Resource.get(entity + "index.htm");
-					}
-				}
-
 				if (res != null && res.getResource() != null) {
 					setContentHeaders(resp, res);
 					resp.getOutputStream().write(res.getResource(), 0, res.getLength());
+					return;
 				}
 			}
 
-			if (res == null) {
-				HTTPServletHelp.error(resp, 404, "Entity not found.");
-				return;
-			}
+			HTTPServletHelp.error(resp, 404, "Entity not found.");
 		} catch (Exception ex) {
 			HTTPServletHelp.error(resp, ex);
 		}
